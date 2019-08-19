@@ -18,13 +18,21 @@ const p = new Promise((resolve,reject)=>{
     // }))
     
 })
+// let obj = {}
+// Object.defineProperty(obj,'then', {
+//     get() {
+//         throw new Error('失败')
+//     }
+// })
 let promise2 = p.then(data=> {
-    return 123
+    return new Promise((resolve,reject)=> {
+       
+    })
 })
 promise2.then(data => {
-    console.log('s'+data);
+    console.log(data);
 },err=> {
-    console.log('e'+err);
+    console.log(err);
 })
 
 

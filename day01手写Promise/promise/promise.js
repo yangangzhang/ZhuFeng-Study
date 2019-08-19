@@ -6,11 +6,44 @@ const REJECT = 'reject';  // 失败
 //! 10.x可能是个普通值,可能是个promise
 const resolvePromise = (promise2, x, resolve, reject) => {
   //* 处理x的类型,来决定是调用resolve还是reject
-  resolve(x) //如果返回值是个数值,直接返回此值
+  //! 12.自己等待自己,会进入死循环,报错,进行判断
+  if (promise2 === x) {
+    return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
+  }
+  //! 13.判断x 是不是一个普通值, 先认为你是一个promise
+  if ((typeof x === 'object' && x !== null) || typeof x === 'function') {
+    let called; //! 18.默认没有调用成功和 失败,如果调用了就返回,防止多次调用
+    //! 14.可能是promise 如何判断是不是promise ,通过then判断
+    try { //! 16.取then的时候有可能抛出异常,Objec.defineProperty()
+      let then = x.then; //! 15.看一看有没有then方法
+      //* 判断then是不是一个方法
+      if(typeof then === 'function') { // {then:function(){}}
+        // 是promise
+        // x.then(()=>{},()=>{}) //* 不能这样写
+        then.call(x,y=> {  // 如果是一个promise,就采用这个promise的结果
+          if(called) return
+          called = true;
+          //! 17.y 有可能还是一个promise  实现递归解析
+          resolvePromise(promise2,y,resolve,reject)  
+        },r=>{
+          if(called) return
+          called = true;
+          reject(r)
+        })
+      }else {
+        resolve(x)// 常量直接抛出去即可
+      }
+    } catch (e) {
+      if(called) return
+      called = true;
+      reject(e);  //取then抛出异常,就报错
+    }
+  } else {
+    resolve(x) //! 13.不是promise,就是普通值了,直接返回
+  }
 }
 class Promise {
   constructor(executor) {
-
     this.value = undefined;  //成功的信息
     this.reason = undefined; //失败的信息
     this.status = PENDDING;  //状态值
@@ -33,7 +66,6 @@ class Promise {
         this.onRejectCallbacks.forEach(fn => fn())
       }
     }
-
     //* 这里可能会发生一个异常(throw new Error)
     try {
       //! 1. 创建一个promise executor会立即执行
@@ -45,6 +77,10 @@ class Promise {
   }
   //! 5.每个Promise都有一个then方法, then方法会判断当前的状态,去执行相应的方法
   then(onFulfilled, onReject) {
+    //! 19.可选参数,如果没有传onFulfilled,onReject就给一个默认参数即可
+    onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : val=>val;
+    onReject = typeof onReject === 'function' ? onReject : err=>{throw err};
+
     //* then中有两个方法,成功(onFulfilled),失败(onReject)
     //! 7.返回promise才会有then方法,then方法调用后应该返还一个新的promise,以供连续调用
     //* 执行完new Promise里面之后才返回promise2,执行过程中,promise2是undefined,需要加一个定时器
@@ -99,9 +135,16 @@ class Promise {
       }
     })
     return promise2
-
   }
 }
-
+//! 20.测试Promise是否符合规范
+Promise.deferred = function(){
+  let dfd = {};
+  dfd.promise = new Promise((resolve,reject)=>{
+    dfd.resolve = resolve;
+    dfd.reject = reject
+  })
+  return dfd;
+}
 // 导出当前类 commonjs定义方式
 module.exports = Promise
