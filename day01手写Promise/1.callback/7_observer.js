@@ -1,6 +1,6 @@
 // 观察者模式 基于 发布订阅 模式
 
-class Sbuject {  // 1.被观察者  小宝宝
+/* class Sbuject {  // 1.被观察者  小宝宝
   constructor() {
     this.arr = [];  // 存储空间  [o1,o2]
     this.state = '我很开心'  // 被观察者的一个状态
@@ -31,4 +31,36 @@ let o2 = new Observer('我媳妇')
 
 s.attach(o1);  // 3.被观察者中添加观察者对象
 s.attach(o2);
-s.setState('不开心了')  // 4.被观察者修改状态
+s.setState('不开心了')  // 4.被观察者修改状态 */
+
+class Subject {  //被观察者
+  constructor () {
+    this.arr = [];
+    this.state = '我很开心'
+  }
+  attach(o) {
+    this.arr.push(o);
+  }
+  setState(newState) {
+    this.state = newState;
+    this.arr.forEach(o => o.update(newState));
+  }
+}
+
+class Observer { //观察者
+  constructor(name) {
+    this.name = name;
+  }
+  update(newState) {
+    console.log(this.name + '小宝宝:' + newState);
+    
+  }
+}
+
+
+let s = new Subject('小宝宝');
+let o1 = new Observer('我');
+let o2 = new Observer('我媳妇');
+s.attach(o1)
+s.attach(o2)
+s.setState('我不开心了')

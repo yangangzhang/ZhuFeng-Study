@@ -17,4 +17,4 @@ fs.readFile('age.txt','utf8',(err,data)=> {
   school['age'] = data;
   newAfter();
 })
-// 发布订阅模式
+
