@@ -41,4 +41,13 @@ Promise.all(
 ).then(data => {
   console.log(data);
 })
-//race 有一个成功就成功 有一个失败就失败
+
+
+/**
+ * 作业:
+ * 1. Promise.finally
+ * 2. Promise.try
+ * 3. race 有一个成功就成功 有一个失败就失败
+ * 4. 如果终止一个promise 不要当前这个promise的结果
+ * 5. 如何中断promise
+ */
