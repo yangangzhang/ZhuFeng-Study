@@ -4,14 +4,17 @@
 // 
 /**
  * Promise是一个类
- * 1. 每次new 一个Promise 都要传递一个执行器,执行器是立即执行的
+ * 1. 每次new 一个Promise 都要传递一个执行器(executor),执行器是立即执行的
  * 2. 执行器函数中有两个参数 resolve,reject
  * 3. 默认Promise 有三个状态 pendding => resolve 表示成功了, reject 表示拒绝了
  * 4. 如果一旦成功了 不能变成失败; 一旦失败,不能再成功了.只有当前状态是pending的时候,才能更改状态.
+ *  * 进入失败的方式,调用reject(), 抛出错误 throw new Error();
  * 5. 每个promise都有一个then方法
  */
-let Promise = require('./promise')
+
+let Promise = require('./_promise')
 let p = new Promise((resolve, reject) => {
+
   setTimeout(() => {
     resolve('我有钱')
     // reject('我没钱')

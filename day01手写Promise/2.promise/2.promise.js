@@ -27,27 +27,26 @@ readFile('./name.txt', 'utf8').then(data => {
 
 /**
  * promise的链式调用
- * 1. 普通值表示bushipromise,也不是错误
+ * 1. 普通值表示不是promise,也不是错误
  * 2. 如果返回的是一个promise name这个promise会执行,并且采用他的状态
  */
-// readFile('./name.txt','utf8').then(data=> {
-//   return data
-// },err => {
-//   console.log('e'+err);
+readFile('./name.txt','utf8').then(data=> {
+  return data
+},err => {
+  console.log('e'+err);
 
-// }).then(data => { //想让下一个then 走失败 ,需要1)返回一个失败的promise,抛出一个异常.
-//   console.log(data);
-//   return new Promise((resolve,reject)=> {
-//     resolve('success')  
-//   })
-//   // throw new Error('err');
-// }).then(data=> {
-//   console.log(data);
+}).then(data => { //想让下一个then 走失败 ,需要1)返回一个失败的promise,抛出一个异常.
+  console.log(data);
+  return new Promise((resolve,reject)=> {
+    resolve('success')  
+  })
+  // throw new Error('err');
+}).then(data=> {
+  console.log(data);
 
-// },err=> {
-//   console.log('err--'+err);
-
-// })
+},err=> {
+  console.log('err--'+err);
+})
 
 
 

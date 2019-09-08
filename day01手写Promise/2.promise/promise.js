@@ -1,7 +1,7 @@
 //! 3.默认Promise三个状态: pendding,fulfiled,reject
-const PENDDING = 'pendding';  // 等待
-const FULFILLED = 'fulfilled';  // 成功
-const REJECT = 'reject';  // 失败
+const PENDDING = 'pendding'; // 等待
+const FULFILLED = 'fulfilled'; // 成功
+const REJECT = 'reject'; // 失败
 //* 判断是不是Promise
 const isPromise = value => {
   if ((typeof value === 'object' && value !== null) || typeof value === 'function') {
@@ -27,7 +27,7 @@ const resolvePromise = (promise2, x, resolve, reject) => {
       if (typeof then === 'function') { // {then:function(){}}
         // 是promise
         // x.then(()=>{},()=>{}) //* 不能这样写
-        then.call(x, y => {  // 如果是一个promise,就采用这个promise的结果
+        then.call(x, y => { // 如果是一个promise,就采用这个promise的结果
           if (called) return
           called = true;
           //! 17.y 有可能还是一个promise  实现递归解析
@@ -38,12 +38,12 @@ const resolvePromise = (promise2, x, resolve, reject) => {
           reject(r)
         })
       } else {
-        resolve(x)// 常量直接抛出去即可
+        resolve(x) // 常量直接抛出去即可
       }
     } catch (e) {
       if (called) return
       called = true;
-      reject(e);  //取then抛出异常,就报错
+      reject(e); //取then抛出异常,就报错
     }
   } else {
     resolve(x) //! 13.不是promise,就是普通值了,直接返回
@@ -51,9 +51,9 @@ const resolvePromise = (promise2, x, resolve, reject) => {
 }
 class Promise {
   constructor(executor) {
-    this.value = undefined;  //成功的信息
-    this.reason = undefined; //失败的信息
-    this.status = PENDDING;  //状态值
+    this.value = undefined; //成功的信息
+    this.reason = undefined; //失败的原因
+    this.status = PENDDING; //状态值
     //! 6.一个promise中可以执行多次then(异步执行,相当于发布订阅模式)
     this.onResolvedCallbacks = [];
     this.onRejectCallbacks = [];
@@ -61,13 +61,13 @@ class Promise {
     let resolve = value => {
       //! 21.如果一个promise resolve了一个新的promise 会等到这个内部的promise完成
       if (value instanceof Promise) {
-        return value.then(resolve, reject)  //和resolvePromise功能是一样的
+        return value.then(resolve, reject) //和resolvePromise功能是一样的
       }
       //! 4.只有当前状态是pendding时才可以更改状态
       if (this.status === PENDDING) {
         this.value = value;
         this.status = FULFILLED
-        this.onResolvedCallbacks.forEach(fn => fn())  //发布, 有可能resolve在then的后面执行,此时先将方法存起来,到时候成功了,依次执行这些函数
+        this.onResolvedCallbacks.forEach(fn => fn()) //发布, 有可能resolve在then的后面执行,此时先将方法存起来,到时候成功了,依次执行这些函数
       }
     }
     let reject = (reason) => {
@@ -90,7 +90,9 @@ class Promise {
   then(onFulfilled, onReject) {
     //! 19.可选参数,如果没有传onFulfilled,onReject就给一个默认参数即可
     onFulfilled = typeof onFulfilled === 'function' ? onFulfilled : val => val;
-    onReject = typeof onReject === 'function' ? onReject : err => { throw err };
+    onReject = typeof onReject === 'function' ? onReject : err => {
+      throw err
+    };
 
     //* then中有两个方法,成功(onFulfilled),失败(onReject)
     //! 7.返回promise才会有then方法,then方法调用后应该返还一个新的promise,以供连续调用
@@ -121,7 +123,7 @@ class Promise {
         })
       }
       if (this.status === PENDDING) {
-        this.onResolvedCallbacks.push(() => {  //* 订阅
+        this.onResolvedCallbacks.push(() => { //* 订阅
           //* 使用箭头函数是因为在这个函数中还可以做一些其他的事情
           // todo...
           setTimeout(() => {
@@ -147,10 +149,10 @@ class Promise {
     })
     return promise2
   }
-  catch(errCallback) {  //! 22.没有成功的then
+  catch (errCallback) { //! 22.没有成功的then
     return this.then(null, errCallback)
   }
-  static resolve(value) {  //! 23. 创建了一个成功的promise
+  static resolve(value) { //! 23. 创建了一个成功的promise
     return new Promise((resolve, reject) => {
       resolve(value);
     })
@@ -160,9 +162,9 @@ class Promise {
       reject(value);
     })
   }
-  static all(promises) {  //! 25.实现all方法
+  static all(promises) { //! 25.实现all方法
     return new Promise((resolve, reject) => {
-      let arr = [];  //存放最终结果的
+      let arr = []; //存放最终结果的
       let i = 0;
       let processData = (index, data) => { //处理数据
         arr[index] = data; //将数据放到数组中,成功的数量和传入的数量相等的时候将结果抛出去即可
@@ -171,7 +173,7 @@ class Promise {
         }
       }
       for (let i = 0; i < promises.length; i++) {
-        const current = promises[i];  //获取当前的每一项
+        const current = promises[i]; //获取当前的每一项
         if (isPromise(current)) { //如果是promise .. 
           current.then(data => {
             processData(i, data)
@@ -180,6 +182,45 @@ class Promise {
           processData(i, current)
         }
       }
+    })
+  }
+  static race(promises) { //! 26 实现race方法
+    return new Promise((resolve, reject) => {
+      // 只要有一个成功就成功,有一个失败就失败
+      for (let i = 0; i < promises.length; i++) {
+        const current = promises[i];
+        // 如果是promise,成功直接返回成功值,失败返回失败值
+        if (isPromise(current)) {
+          current.then(() => {
+            resolve(current)
+          }, err => {
+            reject(err)
+          })
+        } else {
+          // 如果是一个普通值直接返回
+          resolve(current)
+        }
+      }
+    })
+  }
+  finally(callback) { //! 27实现finally方法
+    return this.then(val => {
+      // 等待finally中的函数执行完毕,继续执行,finally函数可能返回一个promise,用promise.resolve等待返回
+      return Promise.resolve(callback()).then((value) => { //todo这里的value没有返回出去,外部无法获取其值
+        return val
+      })
+    }, err => {
+      return Promise.resolve(callback()).then(() => {
+        throw err
+      })
+    })
+  }
+  static try(callback) { //! 28 实现try方法
+    // 既能捕获同步,又能捕获异步
+    // try返回的是一个promise
+    // 如果callback返回的是普通throw new Error(''),那就把callback也变成promise
+    return new Promise((resolve,reject)=> {
+      return Promise.resolve(callback()).then(resolve,reject)
     })
   }
 }
@@ -195,4 +236,3 @@ Promise.deferred = function () {
 
 // 导出当前类 commonjs定义方式
 module.exports = Promise
-
